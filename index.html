@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Malawi Tourism Circuit - Dijkstra & MST</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 8px;
+      color: #38bdf8;
+      font-size: 1.8rem;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 30px;
+      font-size: 0.95rem;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    label { font-size: 0.9rem; color: #94a3b8; }
+    select, button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    select {
+      background: #334155;
+      color: #e2e8f0;
+      min-width: 160px;
+    }
+    button {
+      background: #0ea5e9;
+      color: white;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    button:hover { background: #0284c7; }
+    button.secondary {
+      background: #6366f1;
+    }
+    button.secondary:hover { background: #4f46e5; }
+    .result {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      white-space: pre-wrap;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      min-height: 80px;
+    }
+    .path {
+      color: #4ade80;
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-top: 8px;
+    }
+    .distance {
+      color: #38bdf8;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+    .steps {
+      margin-top: 12px;
+      color: #94a3b8;
+      font-size: 0.85rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .mst-edge {
+      color: #a5b4fc;
+    }
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Malawi Tourism Circuit</h1>
+    <p class="subtitle">Dijkstra Shortest Path & Kruskal Minimum Spanning Tree</p>
+
+    <!-- Dijkstra Card -->
+    <div class="card">
+      <h2 style="margin-bottom:16px; color:#38bdf8;">Shortest Path (Dijkstra)</h2>
+      <div class="controls">
+        <div>
+          <label>From</label><br>
+          <select id="from"></select>
+        </div>
+        <div>
+          <label>To</label><br>
+          <select id="to"></select>
+        </div>
+        <button onclick="runDijkstra(false)">Find Shortest Path</button>
+        <button class="secondary" onclick="runDijkstra(true)">Show Steps</button>
+      </div>
+      <div class="result" id="dijkstraResult">
+        Select source and destination, then click a button.
+      </div>
+    </div>
+
+    <!-- MST Card -->
+    <div class="card">
+      <h2 style="margin-bottom:16px; color:#a5b4fc;">Minimum Spanning Tree (Kruskal)</h2>
+      <button class="secondary" onclick="runMST()">Show MST</button>
+      <div class="result" id="mstResult">
+        Click the button to compute the Minimum Spanning Tree.
+      </div>
+    </div>
+
+    <footer>
+      DSA Assignment 2026 • Malawi Tourism Graph (20 nodes, 26 edges)
+    </footer>
+  </div>
+
+  <script>
+    // ========== GRAPH DATA ==========
+    const nodes = [
+      "Lilongwe", "Blantyre", "Mzuzu", "KasunguNP", "NkhotakotaWR",
+      "SengaBay", "Chongoni", "CapeMaclear", "Mangochi", "LiwondeNP",
+      "ZombaPlateau", "MulanjeMtn", "Majete", "Lengwe", "NkhataBay",
+      "Chintheche", "Livingstonia", "NyikaNP", "Vwaza", "Karonga"
+    ];
+
+    const edges = [
+      ["Lilongwe", "Chongoni", 90],
+      ["Lilongwe", "SengaBay", 120],
+      ["Lilongwe", "KasunguNP", 150],
+      ["Lilongwe", "Blantyre", 311],
+      ["SengaBay", "NkhotakotaWR", 120],
+      ["SengaBay", "Mangochi", 145],
+      ["KasunguNP", "NkhotakotaWR", 130],
+      ["KasunguNP", "Mzuzu", 260],
+      ["NkhotakotaWR", "Chintheche", 130],
+      ["Chintheche", "NkhataBay", 55],
+      ["NkhataBay", "Mzuzu", 50],
+      ["Mzuzu", "Vwaza", 120],
+      ["Mzuzu", "NyikaNP", 165],
+      ["Vwaza", "NyikaNP", 80],
+      ["Mzuzu", "Livingstonia", 160],
+      ["Livingstonia", "Karonga", 90],
+      ["Mzuzu", "Karonga", 220],
+      ["Mangochi", "CapeMaclear", 70],
+      ["Mangochi", "LiwondeNP", 55],
+      ["LiwondeNP", "ZombaPlateau", 85],
+      ["LiwondeNP", "Blantyre", 150],
+      ["ZombaPlateau", "Blantyre", 70],
+      ["Blantyre", "MulanjeMtn", 80],
+      ["Blantyre", "Majete", 90],
+      ["Majete", "Lengwe", 70],
+      ["Blantyre", "Lengwe", 120]
+    ];
+
+    // Build adjacency list
+    const adj = {};
+    nodes.forEach(n => adj[n] = []);
+    edges.forEach(([u, v, w]) => {
+      adj[u].push({to: v, w});
+      adj[v].push({to: u, w});
+    });
+
+    // Populate dropdowns
+    const fromSelect = document.getElementById("from");
+    const toSelect = document.getElementById("to");
+    nodes.forEach(n => {
+      fromSelect.innerHTML += `<option value="${n}">${n}</option>`;
+      toSelect.innerHTML += `<option value="${n}">${n}</option>`;
+    });
+    fromSelect.value = "Lilongwe";
+    toSelect.value = "Karonga";
+
+    // ========== DIJKSTRA ==========
+    function runDijkstra(verbose) {
+      const start = fromSelect.value;
+      const end = toSelect.value;
+      const resultDiv = document.getElementById("dijkstraResult");
+
+      const dist = {};
+      const prev = {};
+      const done = {};
+      nodes.forEach(n => {
+        dist[n] = Infinity;
+        prev[n] = null;
+        done[n] = false;
+      });
+      dist[start] = 0;
+
+      // Simple priority queue using array
+      const pq = [[0, start]];
+      let steps = [];
+      let stepNum = 0;
+
+      while (pq.length > 0) {
+        pq.sort((a, b) => a[0] - b[0]);
+        const [d, u] = pq.shift();
+        if (done[u]) continue;
+        done[u] = true;
+        stepNum++;
+        let stepText = `Step ${stepNum}: settle ${u} (dist=${d})`;
+        if (verbose) steps.push(stepText);
+
+        if (u === end) break;
+
+        for (const {to, w} of adj[u]) {
+          if (!done[to] && d + w < dist[to]) {
+            const old = dist[to] === Infinity ? "INF" : dist[to];
+            dist[to] = d + w;
+            prev[to] = u;
+            pq.push([dist[to], to]);
+            if (verbose) steps.push(`    relax ${u}→${to}: ${old} → ${dist[to]}`);
+          }
+        }
+      }
+
+      if (dist[end] === Infinity) {
+        resultDiv.innerHTML = `<span style="color:#f87171">No path from ${start} to ${end}</span>`;
+        return;
+      }
+
+      // Reconstruct path
+      const path = [];
+      for (let v = end; v !== null; v = prev[v]) path.push(v);
+      path.reverse();
+
+      let html = `<div class="distance">${dist[end]} km</div>`;
+      html += `<div class="path">${path.join(" → ")}</div>`;
+      if (verbose) {
+        html += `<div class="steps">${steps.join("\n")}</div>`;
+      }
+      resultDiv.innerHTML = html;
+    }
+
+    // ========== KRUSKAL MST ==========
+    function runMST() {
+      const resultDiv = document.getElementById("mstResult");
+
+      // Union-Find
+      const parent = {};
+      nodes.forEach(n => parent[n] = n);
+      function find(x) {
+        if (parent[x] !== x) parent[x] = find(parent[x]);
+        return parent[x];
+      }
+      function unite(a, b) {
+        a = find(a); b = find(b);
+        if (a === b) return false;
+        parent[a] = b;
+        return true;
+      }
+
+      // Sort edges by weight
+      const sorted = [...edges].sort((a, b) => a[2] - b[2]);
+      let total = 0;
+      let count = 0;
+      let lines = [];
+
+      for (const [u, v, w] of sorted) {
+        if (unite(u, v)) {
+          lines.push(`<span class="mst-edge">ADD    ${u} — ${v} (${w} km)</span>`);
+          total += w;
+          count++;
+        } else {
+          lines.push(`SKIP   ${u} — ${v} (${w} km)  [forms a cycle]`);
+        }
+      }
+
+      let html = `<div class="distance">Total: ${total} km</div>`;
+      html += `<div style="margin:8px 0; color:#94a3b8">${count} edges in the MST</div>`;
+      html += `<div class="steps">${lines.join("\n")}</div>`;
+      resultDiv.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
