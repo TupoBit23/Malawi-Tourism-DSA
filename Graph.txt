@@ -1,0 +1,48 @@
+20
+Lilongwe
+Blantyre
+Mzuzu
+KasunguNP
+NkhotakotaWR
+SengaBay
+Chongoni
+CapeMaclear
+Mangochi
+LiwondeNP
+ZombaPlateau
+MulanjeMtn
+Majete
+Lengwe
+NkhataBay
+Chintheche
+Livingstonia
+NyikaNP
+Vwaza
+Karonga
+26
+Lilongwe Chongoni 90
+Lilongwe SengaBay 120
+Lilongwe KasunguNP 150
+Lilongwe Blantyre 311
+SengaBay NkhotakotaWR 120
+SengaBay Mangochi 145
+KasunguNP NkhotakotaWR 130
+KasunguNP Mzuzu 260
+NkhotakotaWR Chintheche 130
+Chintheche NkhataBay 55
+NkhataBay Mzuzu 50
+Mzuzu Vwaza 120
+Mzuzu NyikaNP 165
+Vwaza NyikaNP 80
+Mzuzu Livingstonia 160
+Livingstonia Karonga 90
+Mzuzu Karonga 220
+Mangochi CapeMaclear 70
+Mangochi LiwondeNP 55
+LiwondeNP ZombaPlateau 85
+LiwondeNP Blantyre 150
+ZombaPlateau Blantyre 70
+Blantyre MulanjeMtn 80
+Blantyre Majete 90
+Majete Lengwe 70
+Blantyre Lengwe 120
